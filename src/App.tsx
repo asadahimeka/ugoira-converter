@@ -69,10 +69,10 @@ function App() {
       gif: `-f image2 -r ${rate} -i %06d.jpg -filter_complex [0:v]scale=640:-2,split[x][z];[x]palettegen[y];[z][y]paletteuse ${id}.gif`,
       apng: `-r ${rate} -i %06d.jpg -c:v apng -plays 0 -vsync 0 ${id}.apng`,
       webp: `-r ${rate} -i %06d.jpg -c:v libwebp -lossless 0 -compression_level 5 -quality 100 -loop 0 -vsync 0 ${id}.webp`,
-      // webm: `-r ${rate} -i %06d.jpg -c:v libvpx-vp9 -lossless 0 -crf 15 -b:v 0 -vsync 0 ${id}.webm`,
+      webm: `-r ${rate} -f image2 -i %06d.jpg -c:v libvpx-vp9 -lossless 0 -crf 0 ${id}.webm`,
       // avif: `-r ${rate} -i %06d.jpg -c:v libaom-av1 ${id}.avif`,
     }
-    const code = await ffmpeg.exec(cmds[ext].split(/\s/))
+    const code = await ffmpeg.exec(cmds[ext].split(/\s+/))
 
     setFfMessage(`ReturnCode: ${code} (${code == 0 ? '成功' : '失败'})`)
     if (code != 0) {
@@ -102,7 +102,7 @@ function App() {
         <button onClick={convert('gif')}>转换 ugoira 为 gif</button>
         <button onClick={convert('apng')}>转换 ugoira 为 apng</button>
         <button onClick={convert('webp')}>转换 ugoira 为 webp</button>
-        {/* <button onClick={convert('webm')}>转换 ugoira 为 webm</button> */}
+        <button onClick={convert('webm')}>转换 ugoira 为 webm</button>
         {/* <button onClick={convert('avif')}>转换 ugoira 为 avif</button> */}
       </div>
       {timeUsed > 0 && <p className='ff-message'>耗时: {timeUsed}ms</p>}
