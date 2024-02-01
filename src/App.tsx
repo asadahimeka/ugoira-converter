@@ -25,6 +25,19 @@ function downloadFile(url: string, name = '') {
   document.body.removeChild(a)
 }
 
+function formatBytes(bytes: number | string) {
+  bytes = Number(bytes)
+  if (!bytes) return '0 B'
+
+  const k = 1024
+  const dm = 1
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
+}
+
 async function getUgoiraMetadata(id: string) {
   const resp = await fetch(`https://hibiapi5.cocomi.eu.org/api/pixiv/ugoira_metadata?id=${id}`)
   const json = await resp.json()
@@ -51,6 +64,11 @@ async function getUgoiraFrameBlobs(id: string): Promise<FrameMatadata> {
   return { frames, frameBlobs }
 }
 
+function getPidFromUrl() {
+  const u = new URL(location.href)
+  return u.searchParams.get('id') || ''
+}
+
 function App() {
   const ffmpegRef = useRef(new FFmpeg())
   const videoRef = useRef<HTMLVideoElement | null>(null)
@@ -59,8 +77,9 @@ function App() {
   const [videoSrc, setVideoSrc] = useState('')
   const [ffMessage, setFfMessage] = useState('')
   const [timeUsed, setTimeUsed] = useState(0)
-  const [pid, setPid] = useState('')
+  const [pid, setPid] = useState(getPidFromUrl())
   const [selExt, setSelExt] = useState('mp4')
+  const [dlSize, setDlSize] = useState('')
   const [metadata, setMetadata] = useState<FrameMatadata>({ frames: [], frameBlobs: {} })
 
   useEffect(() => {
@@ -96,6 +115,7 @@ function App() {
     }
     setFfMessage('')
     setTimeUsed(0)
+    setDlSize('')
     if (videoSrc) {
       URL.revokeObjectURL(videoSrc)
       setVideoSrc('')
@@ -115,6 +135,7 @@ function App() {
     const now = Date.now()
 
     setSelExt(ext)
+    setDlSize('')
     setTimeUsed(0)
 
     if (videoSrc) {
@@ -138,10 +159,10 @@ function App() {
 
     const cmds: Record<string, string> = {
       mp4: `-r ${rate} -i %06d.jpg -c:v libx264 -pix_fmt yuv420p -vf pad=ceil(iw/2)*2:ceil(ih/2)*2 ${pid}.mp4`,
-      gif: `-f image2 -r ${rate} -i %06d.jpg -filter_complex [0:v]scale=640:-2,split[x][z];[x]palettegen[y];[z][y]paletteuse ${pid}.gif`,
+      gif: `-r ${rate} -i %06d.jpg -filter_complex [0:v]scale=iw:-2,split[x][z];[x]palettegen[y];[z][y]paletteuse ${pid}.gif`,
       apng: `-r ${rate} -i %06d.jpg -c:v apng -plays 0 -vsync 0 ${pid}.apng`,
-      webp: `-r ${rate} -i %06d.jpg -c:v libwebp -lossless 0 -compression_level 5 -quality 100 -loop 0 -vsync 0 ${pid}.webp`,
-      webm: `-r ${rate} -f image2 -i %06d.jpg -c:v libvpx-vp9 -lossless 0 -crf 0 ${pid}.webm`,
+      webp: `-r ${rate} -i %06d.jpg -c:v libwebp -lossless 0 -compression_level 5 -quality 75 -loop 0 -vsync 0 ${pid}.webp`,
+      webm: `-r ${rate} -i %06d.jpg -c:v libvpx-vp9 -lossless 0 -crf 0 ${pid}.webm`,
     }
     const code = await ffmpeg.exec(cmds[ext].split(/\s+/))
 
@@ -152,9 +173,13 @@ function App() {
 
     const fileData = await ffmpeg.readFile(`${pid}.${ext}`) as ArrayBuffer
     if (['mp4', 'webm'].includes(ext)) {
-      setVideoSrc(URL.createObjectURL(new Blob([new Uint8Array(fileData).buffer], { type: `video/${ext}` })))
+      const videoBlob = new Blob([new Uint8Array(fileData).buffer], { type: `video/${ext}` })
+      setVideoSrc(URL.createObjectURL(videoBlob))
+      setDlSize(formatBytes(videoBlob.size))
     } else {
-      setImageSrc(URL.createObjectURL(new Blob([new Uint8Array(fileData).buffer], { type: `image/${ext}` })))
+      const imageBlob = new Blob([new Uint8Array(fileData).buffer], { type: `image/${ext}` })
+      setImageSrc(URL.createObjectURL(imageBlob))
+      setDlSize(formatBytes(imageBlob.size))
     }
 
     await Promise.all(metadata.frames.map(async e => {
@@ -179,10 +204,10 @@ function App() {
           <span>输入 ID:</span>
           <input className='id-inp' type="text" value={pid} onChange={e => setPid(e.target.value)} />
           <button onClick={fetchMetadata}>获取元信息</button>
-          {(videoSrc || imageSrc) && <button className='active' onClick={download}>下载</button>}
+          {(videoSrc || imageSrc) && <button className='active' onClick={download}>下载 {dlSize && <span>({dlSize})</span>}</button>}
         </>}
       </div>
-      {!loaded && !videoSrc && !imageSrc && <img width={480} src='/115587247.gif' alt='' />}
+      {!loaded && !videoSrc && !imageSrc && <img width={480} className='res-media' src='/115587247.gif' alt='' />}
       {loaded && (
         <div>
           {metadata.frames.length > 0 && <div className="box">
@@ -190,7 +215,7 @@ function App() {
             <button onClick={convert('gif')}>转换为 gif</button>
             <button onClick={convert('webp')}>转换为 webp</button>
             <button onClick={convert('apng')}>转换为 apng</button>
-            <button onClick={convert('webm')}>转换  为 webm</button>
+            <button onClick={convert('webm')}>转换为 webm</button>
           </div>}
           <p>{ffMessage}{timeUsed > 0 && <span> 🕒耗时: {timeUsed}ms</span>}</p>
           {videoSrc && <video className='res-media' ref={videoRef} src={videoSrc} controls muted loop></video>}
