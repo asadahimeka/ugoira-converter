@@ -4,6 +4,8 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
+    'plugin:react/recommended',
+    'plugin:react/jsx-runtime',
     'plugin:react-hooks/recommended',
   ],
   ignorePatterns: ['dist', '.eslintrc.cjs'],
@@ -14,7 +16,6 @@ module.exports = {
     'semi': ['warn', 'never'],
     'no-console': 'off',
     'no-unexpected-multiline': 'error',
-    'no-unused-vars': 'warn',
     'no-unused-expressions': 'off',
     'react-refresh/only-export-components': [
       'warn',
