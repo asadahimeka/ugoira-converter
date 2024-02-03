@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'pwa-192.png', 'pwa-256.png'],
+      includeAssets: ['favicon.ico', 'pwa-192.png'],
       manifestFilename: 'manifest.json',
       manifest: {
         name: 'Ugoira Converter',
@@ -18,11 +18,6 @@ export default defineConfig({
           {
             src: 'pwa-192.png',
             sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: 'pwa-256.png',
-            sizes: '256x256',
             type: 'image/png',
           },
         ],

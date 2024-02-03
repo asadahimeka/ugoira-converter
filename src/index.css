@@ -35,10 +35,19 @@ body {
 }
 
 #root {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   min-height: 100vh;
-  padding: 10px 20px 60px;
   border-top: 5px solid #747bff;
+}
+
+.container {
+  flex: 1;
+  width: 100%;
+  max-width: 1000px;
+  margin: auto;
+  padding: 10px 20px 60px;
 }
 
 h1 {
@@ -93,6 +102,7 @@ button:focus-visible {
 
 .box {
   display: flex;
+  justify-content: center;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
@@ -115,6 +125,7 @@ button:focus-visible {
 
 .id-inp-box {
   display: flex;
+  justify-content: center;
   align-items: center;
   flex-wrap: wrap;
   gap: 16px;
@@ -138,10 +149,50 @@ button:focus-visible {
   outline: 4px auto #646cff;
 }
 
+.ff-message {
+  text-align: center;
+}
+
 .res-media {
   display: block;
-  max-width: 90vw;
+  margin: auto;
+  max-width: 100%;
   height: auto;
+}
+
+footer {
+  width: 100%;
+  padding: 16px;
+  border-top: 1px solid #ccc;
+  text-align: center;
+}
+
+footer p {
+  margin: 0;
+  line-height: 24px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+footer a {
+  color: inherit;
+}
+
+.github-link {
+  position: absolute;
+  top: 20px;
+  right: 5vw;
+  right: min(5vw, 40px);
+}
+
+.github-link svg {
+  width: 32px;
+  height: 32px;
+}
+
+.load-core-btn {
+  display: block;
+  margin: 50px auto;
 }
 
 @media (prefers-color-scheme: light) {
