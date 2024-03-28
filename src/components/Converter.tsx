@@ -33,13 +33,19 @@ export default function Converter() {
     downloadFile(videoSrc || imageSrc, `${pid}.${extSel}`)
   }
 
+  const onPidChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let { value } = e.target
+    value = value.match(/(\d+)/)?.[1] || ''
+    setPid(value)
+  }
+
   return (
     <>
       <div className='id-inp-box'>
         {!loaded && <button className='load-core-btn' onClick={load}>加载 ffmpeg-core</button>}
         {loaded && <>
-          <span>输入 ID:</span>
-          <input className='id-inp' type="text" value={pid} onChange={e => setPid(e.target.value)} />
+          <span>输入动图链接或 ID:</span>
+          <input className='id-inp' type="text" value={pid} onChange={onPidChange} />
           <button onClick={fetchData}>获取元信息</button>
           {(videoSrc || imageSrc) && <button className='active' onClick={download}>下载 {dlSize && <span>({dlSize})</span>}</button>}
         </>}

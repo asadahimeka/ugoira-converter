@@ -1,13 +1,15 @@
 import JSZip from 'jszip'
 import type { FrameItem, FrameMetadata } from './types'
 
+const { VITE_APP_PXIMG_BASE = '' } = import.meta.env
+
 async function getUgoiraMetadata(id: string) {
   try {
     const resp = await fetch(`${import.meta.env.VITE_APP_HIBIAPI_BASE}/ugoira_metadata?id=${id}`)
     const json = await resp.json()
 
     return {
-      zipUrl: json.ugoira_metadata.zip_urls.medium.replace('_ugoira600x600', '_ugoira1920x1080').replace('i.pximg.net', 'pximg.cocomi.eu.org') as string,
+      zipUrl: json.ugoira_metadata.zip_urls.medium.replace('_ugoira600x600', '_ugoira1920x1080').replace('i.pximg.net', VITE_APP_PXIMG_BASE) as string,
       frames: json.ugoira_metadata.frames as FrameItem[],
     }
   } catch (error) {
