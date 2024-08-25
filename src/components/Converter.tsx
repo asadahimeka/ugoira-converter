@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useFFmpeg } from '../common/useFFmpeg'
 import { useConverter } from '../common/useConverter'
 import { downloadFile, getPidFromUrl } from '../common/utils'
+import { PXIMG_BASE_ALTS, FF_CORE_CDN_PRE_ALTS } from '../common/config'
 
 export default function Converter() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
@@ -39,10 +40,32 @@ export default function Converter() {
     setPid(value)
   }
 
+  const onSelectChange = (type: string) => (e: React.ChangeEvent<HTMLSelectElement>) => {
+    localStorage.setItem(type == 'pximg' ? 'PXIMG_BASE' : 'FF_CORE_CDN_PRE', e.target.value)
+    location.reload()
+  }
+
   return (
     <>
       <div className='id-inp-box'>
-        {!loaded && <button className='load-core-btn' onClick={load}>加载 ffmpeg-core</button>}
+        {!loaded && (
+          <div>
+            <div className="box">
+              <select className='sel' value={''} onChange={onSelectChange('ffcdn')}>
+                <option value="" disabled>选择 ffmpeg-core CDN</option>
+                <option value="">默认</option>
+                {FF_CORE_CDN_PRE_ALTS.map(e => <option value={e} key={e}>{e}</option>)}
+              </select>
+              <select className='sel' value={''} onChange={onSelectChange('pximg')}>
+                <option value="" disabled>选择 pximg 代理</option>
+                <option value="">默认</option>
+                {PXIMG_BASE_ALTS.map(e => <option value={e} key={e}>{e}</option>)}
+              </select>
+              <button className='load-core-btn' onClick={load}>加载 ffmpeg-core</button>
+            </div>
+            {ffMessage && <p className='ff-message'>{ffMessage}</p>}
+          </div>
+        )}
         {loaded && <>
           <span>输入动图链接或 ID:</span>
           <input className='id-inp' type="text" value={pid} onChange={onPidChange} />

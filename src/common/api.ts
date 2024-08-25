@@ -1,16 +1,15 @@
 import JSZip from 'jszip'
 import type { FrameItem, FrameMetadata } from './types'
-
-const { VITE_APP_PXIMG_BASE = '' } = import.meta.env
+import { PXIMG_BASE } from './config'
 
 async function getUgoiraMetadata(id: string) {
   try {
-    const resp = await fetch(`${import.meta.env.VITE_APP_HIBIAPI_BASE}/ugoira_metadata?id=${id}`)
+    const resp = await fetch(`https://hibiapi.cocomi.eu.org/api/pixiv-web-api/illustUgoiraMeta?args=[${id}]`)
     const json = await resp.json()
 
     return {
-      zipUrl: json.ugoira_metadata.zip_urls.medium.replace('_ugoira600x600', '_ugoira1920x1080').replace('i.pximg.net', VITE_APP_PXIMG_BASE) as string,
-      frames: json.ugoira_metadata.frames as FrameItem[],
+      zipUrl: json.originalSrc.replace('i.pximg.net', PXIMG_BASE) as string,
+      frames: json.frames as FrameItem[],
     }
   } catch (error) {
     return {
@@ -20,12 +19,33 @@ async function getUgoiraMetadata(id: string) {
   }
 }
 
-export async function getUgoiraFrameBlobs(id: string): Promise<FrameMetadata> {
+export async function getUgoiraFrameBlobs(id: string, setFFMessage: (v: string) => void): Promise<FrameMetadata> {
+  const emptyRes = { frames: [], frameBlobs: {} }
   const { zipUrl, frames } = await getUgoiraMetadata(id)
-  if (zipUrl == null) {
-    return { frames: [], frameBlobs: {} }
+  if (zipUrl == null) return emptyRes
+
+
+  // const zipBlob = await (await fetch(zipUrl)).blob()
+
+  // Step 1：启动 fetch，并获得一个 reader
+  const response = await fetch(zipUrl)
+  if (!response.ok || !response.body) return emptyRes
+  const reader = response.body.getReader()
+  // Step 2：获得总长度（length）
+  const contentLength = +(response.headers.get('Content-Length') || 0)
+  // Step 3：读取数据
+  let receivedLength = 0 // 当前接收到了这么多字节
+  const chunks = [] // 接收到的二进制块的数组（包括 body）
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    chunks.push(value)
+    receivedLength += value.length
+    setFFMessage(`加载动图 zip 中：${(receivedLength / contentLength * 100).toFixed(2)}%`)
   }
-  const zipBlob = await (await fetch(zipUrl)).blob()
+  const zipBlob = new Blob(chunks)
+
   const jszipInst = new JSZip()
   const zip = await jszipInst.loadAsync(zipBlob)
   const frameBlobs: Record<string, Blob> = {}

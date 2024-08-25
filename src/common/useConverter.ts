@@ -41,7 +41,7 @@ export function useConverter() {
     }
     setFFMessage('获取元信息中...')
 
-    const res = await getUgoiraFrameBlobs(pid)
+    const res = await getUgoiraFrameBlobs(pid, setFFMessage)
     if (res.frames.length > 0) {
       console.log('res: ', res)
       setMetadata(res)
