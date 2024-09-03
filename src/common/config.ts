@@ -11,5 +11,6 @@ export const FF_CORE_CDN_PRE = localStorage.getItem('FF_CORE_CDN_PRE') || 'https
 export const FF_CORE_CDN_PRE_ALTS = [
   'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm',
   'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.6/dist/esm',
-  'https://fastly.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.6/dist/esm'
+  'https://fastly.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.6/dist/esm',
+  'https://npm.webcache.cn/@ffmpeg/core-mt@0.12.6/dist/esm/'
 ]

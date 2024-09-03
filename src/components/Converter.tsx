@@ -10,6 +10,7 @@ export default function Converter() {
   const [ffMessage, setFFMessage] = useState('')
   const [pid, setPid] = useState(getPidFromUrl())
   const [vfr, setVFR] = useState(false)
+  const [showSetting, setShowSetting] = useState(false)
 
   const { ffmpegRef, loaded, loadFFmpegCore } = useFFmpeg()
   const { imageSrc, videoSrc, metadata, extSel, timeUsed, dlSize, fetchMetadata, convertUgoira } = useConverter()
@@ -45,23 +46,30 @@ export default function Converter() {
     location.reload()
   }
 
+  const toggleSettingShow = () => {
+    setShowSetting(v => !v)
+  }
+
   return (
     <>
       <div className='id-inp-box'>
         {!loaded && (
           <div>
             <div className="box">
-              <select className='sel' value={''} onChange={onSelectChange('ffcdn')}>
-                <option value="" disabled>选择 ffmpeg-core CDN</option>
-                <option value="">默认</option>
-                {FF_CORE_CDN_PRE_ALTS.map(e => <option value={e} key={e}>{e}</option>)}
-              </select>
-              <select className='sel' value={''} onChange={onSelectChange('pximg')}>
-                <option value="" disabled>选择 pximg 代理</option>
-                <option value="">默认</option>
-                {PXIMG_BASE_ALTS.map(e => <option value={e} key={e}>{e}</option>)}
-              </select>
               <button className='load-core-btn' onClick={load}>加载 ffmpeg-core</button>
+              <button className='load-core-btn' onClick={toggleSettingShow}>设置</button>
+              {showSetting && <div className="box">
+                <select className='sel' value={''} onChange={onSelectChange('ffcdn')}>
+                  <option value="" disabled>选择 ffmpeg-core CDN</option>
+                  <option value="">默认</option>
+                  {FF_CORE_CDN_PRE_ALTS.map(e => <option value={e} key={e}>{e}</option>)}
+                </select>
+                <select className='sel' value={''} onChange={onSelectChange('pximg')}>
+                  <option value="" disabled>选择 pximg 代理</option>
+                  <option value="">默认</option>
+                  {PXIMG_BASE_ALTS.map(e => <option value={e} key={e}>{e}</option>)}
+                </select>
+              </div>}
             </div>
             {ffMessage && <p className='ff-message'>{ffMessage}</p>}
           </div>
